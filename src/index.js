@@ -78,8 +78,10 @@ async function setupDiscordSdk() {
             `https://cdn.discordapp.com/icons/${currentGuild.id}/${currentGuild.icon}.webp?size=128`
         );
         document.getElementById("guild-icon").appendChild(guildImg);
+        console.log(currentGuild.id);
     }catch(e){
         console.error(e);
+        console.log("Error in setupdiscord and guild");
     }
 })();
 
