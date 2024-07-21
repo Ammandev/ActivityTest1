@@ -6,7 +6,7 @@ const PORT = 3000; // ポート番号は3000
 app.use(express.json());
 
 // /api/tokenへのPOSTリクエストを処理を登録
-app.post('/api/token', async (req, res) => {
+app.post('/.proxy/api/token', async (req, res) => {
     // token取得用のcodeを受け取る
     code = req.body.code;
     console.log("code:", code);
