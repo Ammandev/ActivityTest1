@@ -28,7 +28,7 @@
   XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
     const modifiedUrl = updaterURI(url);
     if (modifiedUrl) {
-      console.log('XMLHttpRequest called with URL:', modifiedUrl);
+   //   console.log('XMLHttpRequest called with URL:', modifiedUrl);
       return originalXMLHttpRequestOpen.apply(this, [method, modifiedUrl, async, user, password]);
     }
   };
@@ -38,7 +38,7 @@
   window.fetch = function() {
     const modifiedUrl = updaterURI(arguments[0]);
     if (modifiedUrl) {
-      console.log('fetch called with URL:', modifiedUrl);
+   //   console.log('fetch called with URL:', modifiedUrl);
       return originalFetch.apply(this, [modifiedUrl, ...Array.prototype.slice.call(arguments, 1)]);
     }
   };
@@ -48,7 +48,7 @@
   window.WebSocket = function(url, protocols) {
     const modifiedUrl = updaterURI(url);
     if (modifiedUrl) {
-      console.log('WebSocket called with URL:', modifiedUrl);
+    //  console.log('WebSocket called with URL:', modifiedUrl);
       return protocols ? new originalWebSocket(modifiedUrl, protocols) : new originalWebSocket(modifiedUrl);
     }
   };
