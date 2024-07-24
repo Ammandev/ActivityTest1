@@ -1,0 +1,5 @@
+yalc.lock
+.yalc
+.env
+_unity_colyseus
+node_modules
