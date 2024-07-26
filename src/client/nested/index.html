@@ -29,32 +29,31 @@
     <script>
         function resizeCanvas() {
             var canvas = document.querySelector("#unity-canvas");
-            var aspectRatio = 16 / 9; // Desired aspect ratio
 
             var windowWidth = window.innerWidth;
             var windowHeight = window.innerHeight;
 
-            // Condition to stop scaling
-            if (windowHeight > windowWidth || windowWidth > 3 * windowHeight) {
-                canvas.style.width = windowWidth + 'px';
-                canvas.style.height = windowHeight + 'px';
-                return;
-            }
-
             var newWidth, newHeight;
 
-            if ((windowWidth / windowHeight) > aspectRatio) {
-                // Window is wider than desired aspect ratio
-                newHeight = windowHeight;
-                newWidth = newHeight * aspectRatio;
-            } else {
-                // Window is narrower than desired aspect ratio
+            if (windowHeight > windowWidth) {
+                // Set to 1:1 aspect ratio
                 newWidth = windowWidth;
-                newHeight = newWidth / aspectRatio;
+                newHeight = windowWidth;
+            } else if (windowWidth >= 3 * windowHeight) {
+                // Set to 3:1 aspect ratio
+                newWidth = windowWidth;
+                newHeight = windowWidth / 3;
+            } else {
+                // Adjust to fit screen while maintaining 16:9 aspect ratio
+                var aspectRatio = 16 / 9;
+                if ((windowWidth / windowHeight) > aspectRatio) {
+                    newHeight = windowHeight;
+                    newWidth = newHeight * aspectRatio;
+                } else {
+                    newWidth = windowWidth;
+                    newHeight = newWidth / aspectRatio;
+                }
             }
-
-            newWidth = Math.min(newWidth, windowWidth);
-            newHeight = Math.min(newHeight, windowHeight);
 
             canvas.style.width = newWidth + 'px';
             canvas.style.height = newHeight + 'px';
