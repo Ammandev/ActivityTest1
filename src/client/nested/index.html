@@ -36,8 +36,8 @@
 
             var newWidth, newHeight;
 
-            if (windowHeight > windowWidth) {
-                // Set to 1:1 aspect ratio
+            if (windowHeight > windowWidth*0.75) {
+                // Set to 1:0.75 aspect ratio
                 newWidth = windowWidth;
                 newHeight = windowWidth*0.75;
             } else if (windowWidth >= 2.5 * windowHeight) {
