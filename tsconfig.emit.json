@@ -12,7 +12,7 @@
     "removeComments": true,
     "strict": true,
     "useDefineForClassFields": false,
-    "outDir": "./dist/server"
+    "outDir": "./build/server"
   },
   "include": ["src/server"],
   "exclude": ["node_modules"]

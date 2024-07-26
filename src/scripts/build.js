@@ -1,94 +1,128 @@
+
 require("dotenv").config();
 const { build } = require("esbuild");
 const glob = require("glob");
 const fs = require("fs");
-const path = require("path");
 
 console.log("\n----- Building project -----");
 
 const entryPoints = glob.globSync("./src/client/**/*.ts");
 
-// Create necessary directories
-const createDir = (dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-};
+//# CLIENT TYPESCRIPT - - - - -
+//? build
+if (!fs.existsSync("./build")) {
+  fs.mkdirSync("./build");
+}
 
-// Create required directories
-createDir("./dist/client/nested/Build");
+//? build/client
+if (!fs.existsSync("./build/client")) {
+  fs.mkdirSync("./build/client");
+}
 
 // Inject .env vars
 const define = {};
 for (const k in process.env) {
+
+  //\ Only inject public properties
   if (!k.startsWith("PUBLIC_")) continue;
+  
   console.log(` Injecting .env: ${k}`);
   define[`process.env.${k}`] = JSON.stringify(process.env[k]);
 }
 
-// Build into ./dist
+// Build into ./build
 build({
   bundle: true,
   entryPoints,
   outbase: './src/client',
-  outdir: './dist/client',
+  outdir: './build/client',
   platform: 'browser',
   external: [],
   define,
-}).then(() => {
-  console.log("Client build completed.");
-
-  // Copy additional files
-  const copyFile = (src, dest) => {
-    const buffer = fs.readFileSync(src);
-    fs.writeFileSync(dest, buffer);
-  };
-
-  // Copy .env
-  copyFile("./.env", "./dist/.env");
-
-  // Copy index.html
-  copyFile("./src/client/index.html", "./dist/client/index.html");
-  copyFile("./src/client/nested/index.html", "./dist/client/nested/index.html");
-
-  // Copy Unity build files
-  const unityBuildFiles = fs.readdirSync("./src/client/nested/Build");
-  unityBuildFiles.forEach((fileName) => {
-    copyFile(`./src/client/nested/Build/${fileName}`, `./dist/client/nested/Build/${fileName}`);
-  });
-
-  console.log("Other files have been included in the dist folder");
-  console.log("----- Project build ready -----\n");
-}).catch((err) => {
-  console.error("Build failed:", err);
-  process.exit(1);
 });
 
-// Ensure the index.html has the correct configuration
+
+//# NESTED HTML CONFIG - - - - -
+//? Unity build found
+if (!fs.existsSync("./src/client/nested/index.html") || !fs.existsSync("./src/client/nested/Build")) {
+  throw "[ ❌ ] No Unity build found inside src/client/nested";
+}
+
+//? Template data found
+if (fs.existsSync("./src/client/nested/TemplateData")) {
+  throw "[ ❌ ] This base project only supports the Unity 'WebGL Template' set to 'Minimal'";
+}
+
 let htmlString = fs.readFileSync("./src/client/nested/index.html").toString();
 
-// Apply resolution set algorithm
+//# RESOLUTION SET ALGORITHM - - - - -
 if (htmlString.includes("px; background:")) {
+
   const startIndex = htmlString.indexOf("width:");
   const endIndex = htmlString.indexOf("; background:");
   const replaceSubstring = htmlString.substring(startIndex, endIndex);
-  htmlString = htmlString.replace(replaceSubstring, "width: 100vw; height: 100vh");
+
+  htmlString = htmlString.replace(replaceSubstring, "width: 100vw; height: 100vh")
 }
 
-// Apply color reset algorithm
+//# COLOR RESET ALGORITHM
 if (!htmlString.includes("background: #000000")) {
+
   const startIndex = htmlString.indexOf("; background:");
   const endIndex = startIndex + 21;
   const replaceSubstring = htmlString.substring(startIndex, endIndex);
-  htmlString = htmlString.replace(replaceSubstring, "; background: #000000");
+
+  htmlString = htmlString.replace(replaceSubstring, "; background: #000000")
 }
 
-// Ensure Unity instance
+//? Unity instance
 const tab = "  ";
 if (!htmlString.includes("var unityInstance;")) {
-  htmlString = htmlString.replace("createUnityInstance", `var unityInstance;\n${tab}${tab}${tab}createUnityInstance`);
-  htmlString = htmlString.replace("})", "}).then(instance => {\n" + `${tab}${tab}${tab}${tab}unityInstance = instance;\n` + `${tab}${tab}${tab}})`);
+
+  // (Initialize var)
+  htmlString = htmlString.replace("createUnityInstance", `var unityInstance;\n`
+    + `${tab}${tab}${tab}createUnityInstance`);
+  
+  // (Set var)
+  htmlString = htmlString.replace("})", "}).then(instance => {\n"
+    + `${tab}${tab}${tab}${tab}unityInstance = instance;\n`
+    + `${tab}${tab}${tab}})`);
 }
 
 fs.writeFileSync("./src/client/nested/index.html", htmlString);
+
 console.log("Nested HTML configuration ready");
+
+
+//# OTHER FILES - - - - -
+// .env
+const envBuffer = fs.readFileSync("./.env");
+fs.writeFileSync("./build/.env", envBuffer);
+
+// client/index.html
+const htmlBuffer = fs.readFileSync("./src/client/index.html");
+fs.writeFileSync("./build/client/index.html", htmlBuffer);
+
+// client/nested/index.html
+//? nested
+if (!fs.existsSync("./build/client/nested")) {
+  fs.mkdirSync("./build/client/nested");
+}
+
+const nestedHtmlBuffer = fs.readFileSync("./src/client/nested/index.html");
+fs.writeFileSync("./build/client/nested/index.html", nestedHtmlBuffer);
+
+// client/nested/Build
+//? nested/Build
+if (!fs.existsSync("./build/client/nested/Build")) {
+  fs.mkdirSync("./build/client/nested/Build");
+}
+
+for (const fileName of fs.readdirSync("./src/client/nested/Build")) {
+
+  const fileBuffer = fs.readFileSync(`./src/client/nested/Build/${fileName}`);
+  fs.writeFileSync(`./build/client/nested/Build/${fileName}`, fileBuffer);
+}
+
+console.log("Other files have been included in the build folder");
+console.log("----- Project build ready -----\n");
