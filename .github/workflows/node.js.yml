@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: build-files
-          path: ./dist  # Update this path according to your build output directory
+          path: ./src/client/nested/Build  # Ensure this path matches the build output directory
 
   deploy:
     name: Deploy
@@ -47,10 +47,10 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: build-files
-          path: ./dist
+          path: ./src/client/nested/Build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist  # Ensure this path matches the build output directory
+          publish_dir: ./src/client/nested/Build  # Ensure this path matches the build output directory
