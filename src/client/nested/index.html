@@ -53,10 +53,13 @@
                 newHeight = newWidth / aspectRatio;
             }
 
+            newWidth = Math.min(newWidth, windowWidth);
+            newHeight = Math.min(newHeight, windowHeight);
+
             canvas.style.width = newWidth + 'px';
             canvas.style.height = newHeight + 'px';
-            canvas.style.marginLeft = (windowWidth - newWidth) / 2 + 'px';
-            canvas.style.marginTop = (windowHeight - newHeight) / 2 + 'px';
+            canvas.style.marginLeft = '0';
+            canvas.style.marginTop = '0';
         }
 
         window.addEventListener('resize', resizeCanvas);
