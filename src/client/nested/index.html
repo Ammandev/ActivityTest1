@@ -38,11 +38,11 @@
             if (windowHeight > windowWidth) {
                 // Set to 1:1 aspect ratio
                 newWidth = windowWidth;
-                newHeight = windowWidth;
+                newHeight = windowWidth/0.8;
             } else if (windowWidth >= 3 * windowHeight) {
                 // Set to 3:1 aspect ratio
-                newWidth = windowWidth;
-                newHeight = windowWidth / 3;
+                newWidth = windowHeight*3;
+                newHeight = windowHeight;
             } else {
                 // Adjust to fit screen while maintaining 16:9 aspect ratio
                 var aspectRatio = 16 / 9;
@@ -53,6 +53,8 @@
                     newWidth = windowWidth;
                     newHeight = newWidth / aspectRatio;
                 }
+                newWidth = windowWidth;
+                newHeight = windowHeight;
             }
 
             canvas.style.width = newWidth + 'px';
