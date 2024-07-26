@@ -12,6 +12,9 @@
             width: 100%;
             height: 100%;
             background: #000000; /* Set background to black */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #unity-canvas {
@@ -27,30 +30,33 @@
         function resizeCanvas() {
             var canvas = document.querySelector("#unity-canvas");
             var aspectRatio = 16 / 9; // Desired aspect ratio
-            var minWidth = 800; // Minimum width limit
-            var maxWidth = 1920; // Maximum width limit
-            var minHeight = 450; // Minimum height limit
-            var maxHeight = 1080; // Maximum height limit
+
+            var windowWidth = window.innerWidth;
+            var windowHeight = window.innerHeight;
+
+            // Condition to stop scaling
+            if (windowHeight > windowWidth || windowWidth > 3 * windowHeight) {
+                canvas.style.width = windowWidth + 'px';
+                canvas.style.height = windowHeight + 'px';
+                return;
+            }
 
             var newWidth, newHeight;
 
-            if ((window.innerWidth / window.innerHeight) > aspectRatio) {
+            if ((windowWidth / windowHeight) > aspectRatio) {
                 // Window is wider than desired aspect ratio
-                newHeight = Math.min(Math.max(window.innerHeight, minHeight), maxHeight);
+                newHeight = windowHeight;
                 newWidth = newHeight * aspectRatio;
             } else {
                 // Window is narrower than desired aspect ratio
-                newWidth = Math.min(Math.max(window.innerWidth, minWidth), maxWidth);
+                newWidth = windowWidth;
                 newHeight = newWidth / aspectRatio;
             }
 
-            newWidth = Math.min(Math.max(newWidth, minWidth), maxWidth);
-            newHeight = Math.min(Math.max(newHeight, minHeight), maxHeight);
-
             canvas.style.width = newWidth + 'px';
             canvas.style.height = newHeight + 'px';
-            canvas.style.marginLeft = (window.innerWidth - newWidth) / 2 + 'px';
-            canvas.style.marginTop = (window.innerHeight - newHeight) / 2 + 'px';
+            canvas.style.marginLeft = (windowWidth - newWidth) / 2 + 'px';
+            canvas.style.marginTop = (windowHeight - newHeight) / 2 + 'px';
         }
 
         window.addEventListener('resize', resizeCanvas);
