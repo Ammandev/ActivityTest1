@@ -50,12 +50,8 @@ jobs:
           name: production-files
           path: build # Adjust this to your actual build output directory
 
-      - name: Deploy to Server
-        run: |
-          # Example deployment script
-          # Replace with your actual deployment method
-          rsync -avz build/ user@yourserver.com:/path/to/deploy
-
-      - name: Start Application
-        run: |
-          ssh user@yourserver.com 'pm2 restart your-app-name' # Example command to restart your app on the server
+          name: Deploy to GitHub Pages
+          uses: peaceiris/actions-gh-pages@v3
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./dist
