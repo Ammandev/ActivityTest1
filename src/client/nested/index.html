@@ -19,6 +19,7 @@
 
         #unity-canvas {
             background: #231F20;
+            display: block;
         }
     </style>
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes">
@@ -44,23 +45,19 @@
                 newWidth = windowHeight*3;
                 newHeight = windowHeight;
             } else {
-                // Adjust to fit screen while maintaining 16:9 aspect ratio
-                var aspectRatio = 16 / 9;
-                if ((windowWidth / windowHeight) > aspectRatio) {
-                    newHeight = windowHeight;
-                    newWidth = newHeight * aspectRatio;
-                } else {
-                    newWidth = windowWidth;
-                    newHeight = newWidth / aspectRatio;
-                }
                 newWidth = windowWidth;
                 newHeight = windowHeight;
             }
 
+            // Ensure the canvas fits within the viewport
             canvas.style.width = newWidth + 'px';
             canvas.style.height = newHeight + 'px';
-            canvas.style.marginLeft = '0';
-            canvas.style.marginTop = '0';
+            canvas.style.margin = 'auto';
+            canvas.style.position = 'absolute';
+            canvas.style.left = '0';
+            canvas.style.top = '0';
+            canvas.style.right = '0';
+            canvas.style.bottom = '0';
         }
 
         window.addEventListener('resize', resizeCanvas);
