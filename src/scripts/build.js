@@ -8,23 +8,20 @@ console.log("\n----- Building project -----");
 
 const entryPoints = glob.globSync("./src/client/**/*.ts");
 
-//# CLIENT TYPESCRIPT - - - - -
-//? build
-if (!fs.existsSync("./dist")) {
-  fs.mkdirSync("./dist");
-}
+// Create necessary directories
+const createDir = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
 
-//? build/client
-if (!fs.existsSync("./dist/client")) {
-  fs.mkdirSync("./dist/client");
-}
+// Create required directories
+createDir("./dist/client/nested/Build");
 
 // Inject .env vars
 const define = {};
 for (const k in process.env) {
-  //\ Only inject public properties
   if (!k.startsWith("PUBLIC_")) continue;
-  
   console.log(` Injecting .env: ${k}`);
   define[`process.env.${k}`] = JSON.stringify(process.env[k]);
 }
@@ -38,81 +35,60 @@ build({
   platform: 'browser',
   external: [],
   define,
+}).then(() => {
+  console.log("Client build completed.");
+
+  // Copy additional files
+  const copyFile = (src, dest) => {
+    const buffer = fs.readFileSync(src);
+    fs.writeFileSync(dest, buffer);
+  };
+
+  // Copy .env
+  copyFile("./.env", "./dist/.env");
+
+  // Copy index.html
+  copyFile("./src/client/index.html", "./dist/client/index.html");
+  copyFile("./src/client/nested/index.html", "./dist/client/nested/index.html");
+
+  // Copy Unity build files
+  const unityBuildFiles = fs.readdirSync("./src/client/nested/Build");
+  unityBuildFiles.forEach((fileName) => {
+    copyFile(`./src/client/nested/Build/${fileName}`, `./dist/client/nested/Build/${fileName}`);
+  });
+
+  console.log("Other files have been included in the dist folder");
+  console.log("----- Project build ready -----\n");
+}).catch((err) => {
+  console.error("Build failed:", err);
+  process.exit(1);
 });
 
-//# NESTED HTML CONFIG - - - - -
-//? Unity build found
-if (!fs.existsSync("./src/client/nested/index.html") || !fs.existsSync("./src/client/nested/Build")) {
-  throw "[ ❌ ] No Unity build found inside src/client/nested";
-}
-
-//? Template data found
-if (fs.existsSync("./src/client/nested/TemplateData")) {
-  throw "[ ❌ ] This base project only supports the Unity 'WebGL Template' set to 'Minimal'";
-}
-
+// Ensure the index.html has the correct configuration
 let htmlString = fs.readFileSync("./src/client/nested/index.html").toString();
 
-//# RESOLUTION SET ALGORITHM - - - - -
+// Apply resolution set algorithm
 if (htmlString.includes("px; background:")) {
   const startIndex = htmlString.indexOf("width:");
   const endIndex = htmlString.indexOf("; background:");
   const replaceSubstring = htmlString.substring(startIndex, endIndex);
-
   htmlString = htmlString.replace(replaceSubstring, "width: 100vw; height: 100vh");
 }
 
-//# COLOR RESET ALGORITHM
+// Apply color reset algorithm
 if (!htmlString.includes("background: #000000")) {
   const startIndex = htmlString.indexOf("; background:");
   const endIndex = startIndex + 21;
   const replaceSubstring = htmlString.substring(startIndex, endIndex);
-
   htmlString = htmlString.replace(replaceSubstring, "; background: #000000");
 }
 
-//? Unity instance
+// Ensure Unity instance
 const tab = "  ";
 if (!htmlString.includes("var unityInstance;")) {
-  // (Initialize var)
   htmlString = htmlString.replace("createUnityInstance", `var unityInstance;\n${tab}${tab}${tab}createUnityInstance`);
-
-  // (Set var)
   htmlString = htmlString.replace("})", "}).then(instance => {\n" + `${tab}${tab}${tab}${tab}unityInstance = instance;\n` + `${tab}${tab}${tab}})`);
 }
 
 fs.writeFileSync("./src/client/nested/index.html", htmlString);
-
 console.log("Nested HTML configuration ready");
-
-//# OTHER FILES - - - - -
-// .env
-const envBuffer = fs.readFileSync("./.env");
-fs.writeFileSync("./dist/.env", envBuffer);
-
-// client/index.html
-const htmlBuffer = fs.readFileSync("./src/client/index.html");
-fs.writeFileSync("./dist/client/index.html", htmlBuffer);
-
-// client/nested/index.html
-//? nested
-if (!fs.existsSync("./dist/client/nested")) {
-  fs.mkdirSync("./dist/client/nested");
-}
-
-const nestedHtmlBuffer = fs.readFileSync("./src/client/nested/index.html");
-fs.writeFileSync("./dist/client/nested/index.html", nestedHtmlBuffer);
-
-// client/nested/Build
-//? nested/Build
-if (!fs.existsSync("./dist/client/nested/Build")) {
-  fs.mkdirSync("./dist/client/nested/Build");
-}
-
-for (const fileName of fs.readdirSync("./src/client/nested/Build")) {
-  const fileBuffer = fs.readFileSync(`./src/client/nested/Build/${fileName}`);
-  fs.writeFileSync(`./dist/client/nested/Build/${fileName}`, fileBuffer);
-}
-
-console.log("Other files have been included in the dist folder");
-console.log("----- Project build ready -----\n");
