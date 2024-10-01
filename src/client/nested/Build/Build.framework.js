@@ -1,60 +1,83 @@
 (function() {
   function updaterURI(address) {
-    let discordAddress = address;
-    if (address.includes("exitgames.com")) {
-      const pattern = /wss:\/\/(\w+)\.exitgames\.com/;
-      const replacement = "wss://1264501575338954823.discordsays.com/.proxy/exitgames/$1";
-      discordAddress = address.replace(pattern, replacement);
-      discordAddress = discordAddress.replace(":443", "");
+    try {
+      let discordAddress = address;
+      if (address.includes("exitgames.com")) {
+        const pattern = /wss:\/\/(\w+)\.exitgames\.com/;
+        const replacement = "wss://1264501575338954823.discordsays.com/.proxy/exitgames/$1";
+        discordAddress = address.replace(pattern, replacement);
+        discordAddress = discordAddress.replace(":443", "");
+      }
+      if (address.includes("photonengine.io")) {
+        const pattern = /wss:\/\/(\w+)\.photonengine\.io/;
+        const replacement = "wss://1264501575338954823.discordsays.com/.proxy/photonengine/$1";
+        discordAddress = address.replace(pattern, replacement);
+        discordAddress = discordAddress.replace(":443", "");
+      }
+      if (address.includes("https://wss/photon/m/")) {
+        const pattern = /wss:\/\/wss\/photon\/m(\/\?.+)/;
+        const replacement = "wss://1264501575338954823.discordsays.com/.proxy/photonengine/";
+        discordAddress = address.replace("https://wss/photon/m/", replacement);
+        //discordAddress = address.replace(pattern, replacement);
+        return ""; // Return an empty string or a dummy URL
+      }
+      
+      // Log the original and modified address
+      console.log('Original URL:', address);
+      console.log('Modified URL:', discordAddress);
+      
+      return discordAddress;
+    } catch (error) {
+      console.error('Error in updaterURI:', error);
+      return address; // Return the original address if an error occurs
     }
-    if (address.includes("photonengine.io")) {
-      const pattern = /wss:\/\/(\w+)\.photonengine\.io/;
-      const replacement = "wss://1264501575338954823.discordsays.com/.proxy/photonengine/$1";
-      discordAddress = address.replace(pattern, replacement);
-      discordAddress = discordAddress.replace(":443", "");
-    }
-    if (address.includes("https://wss/photon/m/")) {
-      const pattern = /wss:\/\/wss\/photon\/m(\/\?.+)/;
-      const replacement = "wss://1264501575338954823.discordsays.com/.proxy/photonengine/";
-      discordAddress = discordAddress.replace("https://wss/photon/m/", replacement);
-      //discordAddress = address.replace(pattern, replacement);
-      return ""; // Return an empty string or a dummy URL
-    }
-    console.log('Original URL:', address);
-    console.log('Modified URL:', discordAddress);
-       return discordAddress;
   }
 
   // Wrap XMLHttpRequest
   const originalXMLHttpRequestOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
-    const modifiedUrl = updaterURI(url);
-    if (modifiedUrl) {
-   //   console.log('XMLHttpRequest called with URL:', modifiedUrl);
-      return originalXMLHttpRequestOpen.apply(this, [method, modifiedUrl, async, user, password]);
+    try {
+      const modifiedUrl = updaterURI(url);
+      if (modifiedUrl) {
+        console.log('XMLHttpRequest called with URL:', url, 'Modified URL:', modifiedUrl);
+        return originalXMLHttpRequestOpen.apply(this, [method, modifiedUrl, async, user, password]);
+      }
+    } catch (error) {
+      console.error('Error in XMLHttpRequest open:', error);
     }
   };
 
   // Wrap fetch
   const originalFetch = window.fetch;
   window.fetch = function() {
-    const modifiedUrl = updaterURI(arguments[0]);
-    if (modifiedUrl) {
-   //   console.log('fetch called with URL:', modifiedUrl);
-      return originalFetch.apply(this, [modifiedUrl, ...Array.prototype.slice.call(arguments, 1)]);
+    try {
+      const modifiedUrl = updaterURI(arguments[0]);
+      if (modifiedUrl) {
+        console.log('fetch called with URL:', arguments[0], 'Modified URL:', modifiedUrl);
+        return originalFetch.apply(this, [modifiedUrl, ...Array.prototype.slice.call(arguments, 1)]);
+      }
+    } catch (error) {
+      console.error('Error in fetch:', error);
+      return originalFetch.apply(this, arguments); // Call fetch with original arguments if error occurs
     }
   };
 
   // Wrap WebSocket
   const originalWebSocket = window.WebSocket;
   window.WebSocket = function(url, protocols) {
-    const modifiedUrl = updaterURI(url);
-    if (modifiedUrl) {
-    //  console.log('WebSocket called with URL:', modifiedUrl);
-      return protocols ? new originalWebSocket(modifiedUrl, protocols) : new originalWebSocket(modifiedUrl);
+    try {
+      const modifiedUrl = updaterURI(url);
+      if (modifiedUrl) {
+        console.log('WebSocket called with URL:', url, 'Modified URL:', modifiedUrl);
+        return protocols ? new originalWebSocket(modifiedUrl, protocols) : new originalWebSocket(modifiedUrl);
+      }
+    } catch (error) {
+      console.error('Error in WebSocket:', error);
+      return new originalWebSocket(url, protocols); // Call WebSocket with original arguments if error occurs
     }
   };
 })();
+
 
 // Existing content of Build.framework.js
 var unityFramework = (() => {
