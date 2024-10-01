@@ -20,7 +20,9 @@
       //discordAddress = address.replace(pattern, replacement);
       return ""; // Return an empty string or a dummy URL
     }
-     return discordAddress;
+    console.log('Original URL:', address);
+    console.log('Modified URL:', discordAddress);
+       return discordAddress;
   }
 
   // Wrap XMLHttpRequest
