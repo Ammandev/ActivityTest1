@@ -10270,7 +10270,7 @@
   // src/client/index.ts
   window.addEventListener("DOMContentLoaded", () => {
     setupSdk({
-      clientId: "1264501575338954823",
+      clientId: "",
       scope: ["identify"],
       tokenRoute: "/api/token"
     });
