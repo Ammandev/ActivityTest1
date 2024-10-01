@@ -1,6 +1,6 @@
 yalc.lock
 .yalc
-build2
+build
 _unity_colyseus
 node_modules
 src/client/nested/Build
