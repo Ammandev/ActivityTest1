@@ -42,6 +42,19 @@ app.use(express.static(path.join(__dirname, "../client"), {
     }
   }
 }));
+const listCommands = async () => {
+  const token: string = process.env.DISCORD_TOKEN!;
+  const clientId: string = process.env.PUBLIC_CLIENT_ID!;
+  const rest = new REST({ version: '10' }).setToken(token);
+
+  try {
+    const commands = await rest.get(Routes.applicationCommands(clientId));
+    console.log('Current commands:', commands);
+  } catch (error) {
+    console.error('Error fetching commands:', error);
+  }
+};
+listCommands();
 
 // Function to delete the entry point command
 const deleteEntryPointCommand = async () => {
