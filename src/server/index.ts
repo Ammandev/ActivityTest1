@@ -24,37 +24,83 @@ app.use(express.static(path.join(__dirname, "../client"), {
     if (path.endsWith(".gz")) {
       res.setHeader("Content-Encoding", "gzip");
     }
-
     if (path.endsWith(".br")) {
       res.setHeader("Content-Encoding", "br");
     }
-
     if (path.endsWith(".wasm.gz") || path.endsWith(".wasm.br") || path.endsWith(".wasm")) {
       res.setHeader("Content-Type", "application/wasm");
     }
-
     if (path.endsWith(".js.gz") || path.endsWith(".js.br") || path.endsWith(".js")) {
       res.setHeader("Content-Type", "application/javascript");
     }
-
     if (path.endsWith(".data") || path.endsWith(".mem")) {
       res.setHeader('Content-Type', 'application/octet-stream');
     }
   }
 }));
-const listCommands = async () => {
-  const token: string = process.env.DISCORD_TOKEN!;
-  const clientId: string = process.env.PUBLIC_CLIENT_ID!;
-  const rest = new REST({ version: '10' }).setToken(token);
 
-  try {
-    const commands = await rest.get(Routes.applicationCommands(clientId));
-    console.log('Current commands:', commands);
-  } catch (error) {
-    console.error('Error fetching commands:', error);
+// Register the Interaction Handler
+app.post('/interactions', express.json(), async (req, res) => {
+  const { type, data, member } = req.body;
+
+  if (type === 2) { // Interaction Type 2 indicates a Slash Command
+    if (data.name === 'activity-command') {
+      try {
+        // Fetch the voice channel ID from the user's current voice state (if any)
+        const voiceChannelId = member?.voice?.channel_id;
+
+        if (!voiceChannelId) {
+          return res.send({
+            type: 4, // Channel message with source
+            data: {
+              content: 'You need to be in a voice channel to start an activity.'
+            }
+          });
+        }
+
+        // Define the activity type (e.g., "YouTube Together" activity ID)
+        const activityType = '1264501575338954823'; // Replace with the desired activity ID
+
+        // Send the request to Discord to create the activity invite
+        const response = await fetch(`https://discord.com/api/v9/channels/${voiceChannelId}/invites`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bot ${process.env.DISCORD_TOKEN}`,
+          },
+          body: JSON.stringify({
+            max_age: 86400, // 24 hours
+            max_uses: 0, // Unlimited uses
+            target_application_id: activityType,
+            target_type: 2, // 2 indicates an embedded application
+            temporary: false,
+          }),
+        });
+
+        const invite = await response.json();
+
+        if (!response.ok) {
+          throw new Error(`Failed to create activity invite: ${invite.message}`);
+        }
+
+        // Respond with the invite link
+        return res.send({
+          type: 4, // Channel message with source
+          data: {
+            content: `Click to join the activity: https://discord.gg/${invite.code}`
+          }
+        });
+
+      } catch (error) {
+        console.error('Error handling activity-command:', error);
+        return res.status(500).send({ error: 'Failed to handle command.' });
+      }
+    }
   }
-};
-listCommands();
+
+  // If the interaction type is not handled, return 400
+  return res.status(400).send({ error: 'Invalid interaction type.' });
+});
 
 // Function to delete the entry point command
 const deleteEntryPointCommand = async () => {
@@ -82,7 +128,6 @@ const registerCommands = async () => {
       description: 'Launches the activity in DMs or groups.',
       type: 1, // Indicates it's a slash command
     }
-    // Add other commands here if needed
   ];
 
   const rest = new REST({ version: '10' }).setToken(token);
@@ -133,7 +178,7 @@ app.post("/api/token", async (req, res) => {
   return;
 });
 
-// Colyseus server setup
+// Colyseus server setup (your existing code)
 if (process.env.COLYSEUS!.toLowerCase() === "true") {
   const colyseusServer = new Server({
     transport: new WebSocketTransport({
