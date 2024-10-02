@@ -44,6 +44,21 @@ app.use(express.static(path.join(__dirname, "../client"), {
 }));
 
 // Register Discord Slash Commands
+const deleteEntryPointCommand = async () => {
+  const token: string = process.env.DISCORD_TOKEN!;
+  const clientId: string = process.env.PUBLIC_CLIENT_ID!;
+  const rest = new REST({ version: '10' }).setToken(token);
+  const commandId = 'YOUR_ENTRY_POINT_COMMAND_ID'; // Replace with the actual command ID
+
+  try {
+    await rest.delete(Routes.applicationCommand(clientId, commandId));
+    console.log('Entry Point command deleted successfully.');
+  } catch (error) {
+    console.error('Error deleting Entry Point command:', error);
+  }
+};
+
+// Function to register commands
 const registerCommands = async () => {
   const token: string = process.env.DISCORD_TOKEN!;
   const clientId: string = process.env.PUBLIC_CLIENT_ID!;
@@ -53,12 +68,8 @@ const registerCommands = async () => {
       name: 'activity-command',
       description: 'Launches the activity in DMs or groups.',
       type: 1, // Indicates it's a slash command
-    },
-    {
-      name: 'your-entry-point-command',
-      description: 'The primary Entry Point command for this application.',
-      type: 1, // Adjust the type and other properties as necessary
     }
+    // Add other commands here if needed
   ];
 
   const rest = new REST({ version: '10' }).setToken(token);
@@ -77,8 +88,14 @@ const registerCommands = async () => {
   }
 };
 
-// Call the function to register commands
-registerCommands();
+// Function to delete entry point and then register commands
+const updateCommands = async () => {
+  await deleteEntryPointCommand(); // Step 1: Delete the entry point command
+  await registerCommands(); // Step 2: Register the new commands
+};
+
+// Call the function to update commands
+updateCommands();
 
 //# HTTP ROUTES - - - - -
 // Fetch token from developer portal and return to the embedded app
