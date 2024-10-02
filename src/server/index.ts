@@ -11,25 +11,38 @@ import { createServer } from "http";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { MatchmakingRoom, GameRoom } from "./utils/rooms";
 
-import { Client, GatewayIntentBits } from 'discord.js';
-
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
-
-
-client.once('ready', () => {
-  console.log('Discord bot ready!');
-
-  // Register the entry point command
-  client.application?.commands.create({
-    name: 'launch_activity',
-    description: 'Launches the activity',
-  });
-});
-
-client.login(process.env.DISCORD_BOT_TOKEN);
-
 //\ Prepare express server
 const app = express();
+async function createEntryPointCommand() {
+  const url = `https://discord.com/api/v10/applications/${process.env.PUBLIC_CLIENT_ID}/commands`;
+
+  const commandData = {
+      name: 'launch',
+      description: 'Launches the activity',
+      type: 4, // PRIMARY_ENTRY_POINT
+      handler: 2, // DISCORD_LAUNCH_ACTIVITY
+      integration_types: [0, 1],
+      contexts: [0, 1, 2]
+  };
+
+  const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`
+      },
+      body: JSON.stringify(commandData)
+  });
+
+  if (response.ok) {
+      console.log('Entry point command created successfully.');
+  } else {
+      console.error('Failed to create entry point command:', await response.text());
+  }
+}
+
+// Call the function to create the command
+createEntryPointCommand();
 
 // Middleware
 app.use(express.json());
