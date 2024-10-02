@@ -53,7 +53,11 @@ const registerCommands = async () => {
       name: 'activity-command',
       description: 'Launches the activity in DMs or groups.',
       type: 1, // Indicates it's a slash command
-      // Remove integration_types and contexts since they are not valid for command registration
+    },
+    {
+      name: 'your-entry-point-command',
+      description: 'The primary Entry Point command for this application.',
+      type: 1, // Adjust the type and other properties as necessary
     }
   ];
 
