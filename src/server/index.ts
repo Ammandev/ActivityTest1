@@ -61,7 +61,7 @@ const deleteEntryPointCommand = async () => {
   const token: string = process.env.DISCORD_TOKEN!;
   const clientId: string = process.env.PUBLIC_CLIENT_ID!;
   const rest = new REST({ version: '10' }).setToken(token);
-  const commandId = 'YOUR_ENTRY_POINT_COMMAND_ID'; // Replace with the actual command ID
+  const commandId = '1264502700385763400'; // Replace with the actual command ID
 
   try {
     await rest.delete(Routes.applicationCommand(clientId, commandId));
