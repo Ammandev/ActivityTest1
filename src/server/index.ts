@@ -43,7 +43,7 @@ app.use(express.static(path.join(__dirname, "../client"), {
   }
 }));
 
-// Register Discord Slash Commands
+// Function to delete the entry point command
 const deleteEntryPointCommand = async () => {
   const token: string = process.env.DISCORD_TOKEN!;
   const clientId: string = process.env.PUBLIC_CLIENT_ID!;
@@ -88,7 +88,7 @@ const registerCommands = async () => {
   }
 };
 
-// Function to delete entry point and then register commands
+// Function to delete the entry point and then register commands
 const updateCommands = async () => {
   await deleteEntryPointCommand(); // Step 1: Delete the entry point command
   await registerCommands(); // Step 2: Register the new commands
@@ -97,8 +97,7 @@ const updateCommands = async () => {
 // Call the function to update commands
 updateCommands();
 
-//# HTTP ROUTES - - - - -
-// Fetch token from developer portal and return to the embedded app
+// HTTP ROUTES - Fetch token from developer portal and return to the embedded app
 app.post("/api/token", async (req, res) => {
   if (!req.body.code) return res.status(400);
 
@@ -121,8 +120,8 @@ app.post("/api/token", async (req, res) => {
   return;
 });
 
-//? Colyseus server
-if (process.env.COLYSEUS!.toLowerCase() == "true") {
+// Colyseus server setup
+if (process.env.COLYSEUS!.toLowerCase() === "true") {
   const colyseusServer = new Server({
     transport: new WebSocketTransport({
       server: createServer(app)
