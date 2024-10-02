@@ -11,6 +11,22 @@ import { createServer } from "http";
 import { WebSocketTransport } from "@colyseus/ws-transport";
 import { MatchmakingRoom, GameRoom } from "./utils/rooms";
 
+import { Client, GatewayIntentBits } from 'discord.js';
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
+
+client.once('ready', () => {
+  console.log('Discord bot ready!');
+
+  // Register the entry point command
+  client.application?.commands.create({
+    name: 'launch_activity',
+    description: 'Launches the activity',
+  });
+});
+
+client.login(process.env.DISCORD_BOT_TOKEN);
 
 //\ Prepare express server
 const app = express();

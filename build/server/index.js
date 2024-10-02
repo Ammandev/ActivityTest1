@@ -12,6 +12,16 @@ const colyseus_1 = require("colyseus");
 const http_1 = require("http");
 const ws_transport_1 = require("@colyseus/ws-transport");
 const rooms_1 = require("./utils/rooms");
+const discord_js_1 = require("discord.js");
+const client = new discord_js_1.Client({ intents: [discord_js_1.GatewayIntentBits.Guilds] });
+client.once('ready', () => {
+    console.log('Discord bot ready!');
+    client.application?.commands.create({
+        name: 'launch_activity',
+        description: 'Launches the activity',
+    });
+});
+client.login(process.env.DISCORD_BOT_TOKEN);
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.static(path_1.default.join(__dirname, "../client"), {
