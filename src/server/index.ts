@@ -53,8 +53,7 @@ const registerCommands = async () => {
       name: 'activity-command',
       description: 'Launches the activity in DMs or groups.',
       type: 1, // Indicates it's a slash command
-      integration_types: ['dm', 'group', 'guild'], // Specify where this command is available
-      contexts: ['dm', 'group', 'guild_text', 'guild_voice'] // Allows the command to work in these contexts
+      // Remove integration_types and contexts since they are not valid for command registration
     }
   ];
 
